@@ -15,22 +15,49 @@ namespace adatbazis
             connectionString = @"server = localhost;user = root;database = gyakorlas";
             MySqlConnection kapcsolat; //Az adatbázissal kapcsolódunk (még egyéb műveletet nem végez)
             kapcsolat = new MySqlConnection(connectionString);
-            kapcsolat.Open(); //Ha nem jók a kapcsolat létrehozásához szüséges adatok, akkor itt áll le,
-                              //ha sikeres, akkor innentől elérhető az adatbázis
-            string sql = "SELECT * FROM személy"; //A futtatandó lekérdezés parancsa
-            MySqlCommand mSqlCmd = new MySqlCommand(sql, kapcsolat); //A parancs futtatásához szükséges objektum,
-                                                                     //adott parancsot a kapcsolattal összeköti
-            MySqlDataReader adatok = mSqlCmd.ExecuteReader();//A parancsot futtatjuk,
-                                                             //a keletkező adatokat tároljuk
-                                                             //ahhoz hasonló, mint a StreamReader
-
-            while (adatok.Read()) //Az adatok.Read() beolvas egy rekordot (sort) az eredménytáblából🤢🐱‍🐉
+            List<string> adatbazislista = new List<string>();
+            try
             {
-                Console.WriteLine(adatok[0]); //Az adatok utáni index jelzi,
-                                              //hogy hányadik mezőt kérem az eredménytáblából
-            }
+                kapcsolat.Open(); //Ha nem jók a kapcsolat létrehozásához szüséges adatok, akkor itt áll le,
+                                  //ha sikeres, akkor innentől elérhető az adatbázis
+                string sql = "SELECT * FROM személy"; //A futtatandó lekérdezés parancsa
+                MySqlCommand mSqlCmd = new MySqlCommand(sql, kapcsolat); //A parancs futtatásához szükséges objektum,
+                                                                         //adott parancsot a kapcsolattal összeköti
 
-            kapcsolat.Close(); //A műveletek befejezése után mindig zárjuk a kapcsolatot!
+                Console.WriteLine("Adjon meg nevet:");
+                string nev = Console.ReadLine();
+                Console.WriteLine("Adjon meg egy települést");
+                string telepules = Console.ReadLine();
+                MySqlCommand hozzaad = new MySqlCommand($"INSERT INTO `személy` (`nev`, `telepules`) VALUES('{nev}', '{telepules}')", kapcsolat);
+                hozzaad.ExecuteNonQuery();
+
+                MySqlDataReader adatok = mSqlCmd.ExecuteReader();//A parancsot futtatjuk,
+                                                                 //a keletkező adatokat tároljuk
+                                                                 //ahhoz hasonló, mint a StreamReader
+                
+                while (adatok.Read()) //Az adatok.Read() beolvas egy rekordot (sort) az eredménytáblából🤢🐱‍🐉
+                {
+                    //összeállítok egy stringet az adatokból
+                    StringBuilder ujString = new StringBuilder();
+                    for (int i = 0; i < adatok.FieldCount; i++)
+                    {
+                        ujString.Append(adatok[i] + " ");
+                    }
+                    adatbazislista.Add(Convert.ToString(ujString)); //Az adatok utáni index jelzi,
+                                                                    //hogy hányadik mezőt kérem az eredménytáblából
+                }
+                for (int i = 0; i < adatbazislista.Count; i++)
+                {
+                    Console.WriteLine(adatbazislista[i]);
+                }
+                kapcsolat.Close(); //A műveletek befejezése után mindig zárjuk a kapcsolatot!
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Hiba!");
+                Console.WriteLine(e.Message);
+            }
+            
             Console.ReadKey();
         }
     }
